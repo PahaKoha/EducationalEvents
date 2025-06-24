@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <!--  Создание таблиц  -->
+    <include file="sql/main/user/create_table_user.sql" relativeToChangelogFile="true"/>
+    <include file="sql/main/role/create_table_role.sql" relativeToChangelogFile="true"/>
+    <include file="sql/main/event_type/create_table_event_type.sql" relativeToChangelogFile="true"/>
+    <include file="sql/main/sphere/create_table_sphere.sql" relativeToChangelogFile="true"/>
+    <include file="sql/main/event/create_table_event.sql" relativeToChangelogFile="true"/>
+    <include file="sql/main/user_role/create_table_user_role.sql" relativeToChangelogFile="true"/>
+    <include file="sql/main/user_event_type/create_table_user_event_type.sql" relativeToChangelogFile="true"/>
+    <include file="sql/main/user_sphere/create_table_user_sphere.sql" relativeToChangelogFile="true"/>
+
+    <!--  Создание хранимых функций поиска  -->
+    <include file="sql/main/event/create_event_search_function.sql" relativeToChangelogFile="true"/>
+
+    <!--  Создание функций  -->
+    <include file="sql/function/create_search_generic_function.sql" relativeToChangelogFile="true"/>
+</databaseChangeLog>

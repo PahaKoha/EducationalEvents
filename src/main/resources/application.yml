@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: events
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+      javax:
+        persistence:
+          validation:
+            mode: none
+    generate-ddl: false
+    hibernate:
+      ddl-auto: validate
+  datasource:
+    host: localhost
+    port: 5432
+    database: ${spring.application.name}
+    url: jdbc:postgresql://${spring.datasource.host}:${spring.datasource.port}/${spring.datasource.database}
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  liquibase:
+    change-log: classpath:/db/migration/changelog.xml
