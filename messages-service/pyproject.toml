@@ -1,0 +1,82 @@
+[project]
+name = "messages-service"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Your Name",email = "you@example.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic (>=2.11.7,<3.0.0)",
+    "pydantic-settings (>=2.10.1,<3.0.0)",
+    "pika (>=1.3.2,<2.0.0)"
+]
+
+[tool.poetry]
+packages = [{include = "messages_service", from = "src"}]
+
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.12.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+show-fixes = true
+line-length = 120
+target-version = "py312"
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
+select = [
+  "E",   # Pycodestyle Errors
+  "W",   # Pycodestyle Warnings
+  "F",   # PyFlakes
+  "I",   # isort
+  "C",   # flake8-comprehensions
+  "B",   # flake8-bugbear
+  "UP",  # pyupgrade
+  "YTT", # flake8-2020
+  "RET", # flake8-return
+  "ANN", # flake8-annotations
+  "PL",  # Pylint
+  "RUF", # Ruff-specific
+  "ASYNC", # flake8-async
+]
+
+ignore = [
+  "ANN101",
+  "PLR2004",
+]
+
+[tool.ruff.flake8-bugbear]
+extend-immutable-calls = ["frozen_dataclass"]
+
+[tool.ruff.isort]
+known-first-party = ["backend"]
+required-imports = ["from __future__ import annotations"]
+
+[tool.ruff.format]
+quote-style = "double"
+line-ending = "lf"
