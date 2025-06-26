@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from logging.config import dictConfig
 
 LOGGING = {
@@ -26,5 +24,5 @@ LOGGING = {
 }
 
 
-def setup_logging():
+def setup_logging() -> None:
     dictConfig(LOGGING)

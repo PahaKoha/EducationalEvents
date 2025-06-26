@@ -24,59 +24,29 @@ ruff = "^0.12.0"
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
+
 [tool.ruff]
-show-fixes = true
+show-fixes = false
 line-length = 120
 target-version = "py312"
 exclude = [
-    ".bzr",
-    ".direnv",
-    ".eggs",
     ".git",
-    ".hg",
-    ".mypy_cache",
-    ".nox",
-    ".pants.d",
-    ".ruff_cache",
-    ".svn",
-    ".tox",
     ".venv",
-    "__pypackages__",
-    "_build",
-    "buck-out",
-    "build",
-    "dist",
-    "node_modules",
     "venv",
 ]
-select = [
-  "E",   # Pycodestyle Errors
-  "W",   # Pycodestyle Warnings
-  "F",   # PyFlakes
-  "I",   # isort
-  "C",   # flake8-comprehensions
-  "B",   # flake8-bugbear
-  "UP",  # pyupgrade
-  "YTT", # flake8-2020
-  "RET", # flake8-return
-  "ANN", # flake8-annotations
-  "PL",  # Pylint
-  "RUF", # Ruff-specific
-  "ASYNC", # flake8-async
+lint.select = [
+    "E",
+    "F",
+    "I",
+    "B",
 ]
-
-ignore = [
-  "ANN101",
-  "PLR2004",
+lint.ignore = [
+    "B008",
 ]
-
-[tool.ruff.flake8-bugbear]
-extend-immutable-calls = ["frozen_dataclass"]
-
-[tool.ruff.isort]
-known-first-party = ["backend"]
-required-imports = ["from __future__ import annotations"]
 
 [tool.ruff.format]
 quote-style = "double"
-line-ending = "lf"
+
+
+[tool.ruff.lint.isort]
+known-first-party = ["backend"]

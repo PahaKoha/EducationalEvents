@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import json
 import logging
 import time
@@ -11,12 +9,12 @@ logger = logging.getLogger(__name__)
 
 
 class RabbitConsumer:
-    def __init__(self, rabbit_url: str, message_queue: str, reconnect_delay: int):
+    def __init__(self, rabbit_url: str, message_queue: str, reconnect_delay: int) -> None:
         self.rabbit_url = rabbit_url
         self.message_queue = message_queue
         self.reconnect_delay = reconnect_delay
 
-    def connect(self):
+    def connect(self) -> None:
         try:
             self.connection = pika.BlockingConnection(pika.URLParameters(self.rabbit_url))
             self.channel = self.connection.channel()
@@ -29,7 +27,7 @@ class RabbitConsumer:
             logger.critical(f"Unexpected error: {e}", exc_info=True)
             raise
 
-    def run(self):
+    def run(self) -> None:
         self.connect()
         self._start_consuming()
 
@@ -48,12 +46,12 @@ class RabbitConsumer:
                 logger.critical(f"Unhandled error: {e}", exc_info=True)
                 self._reconnect()
 
-    def _close_connection(self):
+    def _close_connection(self) -> None:
         if self.connection and self.connection.is_open:
             logger.info("Closing connection...")
             self.connection.close()
 
-    def _start_consuming(self):
+    def _start_consuming(self) -> None:
         if self.channel:
             logger.info("Starting consumer...")
             self._consumer_tag = self.channel.basic_consume(
@@ -61,7 +59,7 @@ class RabbitConsumer:
             )
             self.channel.start_consuming()
 
-    def _reconnect(self):
+    def _reconnect(self) -> None:
         self.should_reconnect = True
         self._close_connection()
 
