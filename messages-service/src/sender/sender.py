@@ -1,36 +1,12 @@
 import logging
 import smtplib
 import ssl
-from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
+from typing import List
 
-from pydantic import SecretStr, BaseModel, Field, field_validator
-
-
-FIRST_MAIL = """
-<h2>Привет, сынок<h2/>
-<h1>Отдай денег и <b>найди мне Лерку<b/><h1/>
-"""
-
-SECOND_MAIL = """
-<h1>Соси соси ебанушечка<h1/>
-"""
-
-
-class EmailConfig(BaseModel):
-    host: str = Field(..., description="SMTP хост")
-    port: int = Field(587, description="Порт SMTP сервера")
-    username: str = Field(..., description="Имя пользователя")
-    password: str = Field(..., description="Пароль или токен")
-    use_tls: bool = Field(True, description="Использовать TLS")
-    timeout: int = Field(10, description="Таймаут подключения в секундах")
-
-    @field_validator("port")
-    def validate_port(cls, value: int) -> int:
-        if not 1 <= value <= 65535:
-            raise ValueError("Некорректный порт SMTP")
-        return value
+from sender.message import EVENT_TEMPLATE, REGISTRATION_TEMPLATE, MessageSubject, MessageType
+from sender.server import EmailConfig
 
 
 class EmailSender:
@@ -38,30 +14,53 @@ class EmailSender:
         self._config = config
         self._logger = logging.getLogger(__name__)
 
-    def send_email(self, subject: str, body: str, receiver: str) -> bool:
-        msg = self._build_email(subject, body, receiver)
+    def send_email(self, rabbit_message: dict) -> bool:
+        messages_type = MessageType(rabbit_message["type"])
 
-        return self._send_via_smtp(msg, receiver)
+        messages: List[MIMEText] = list()
 
-    def _build_email(self, subject: str, body: str, receiver: str) -> MIMEMultipart:
-        msg = MIMEMultipart()
-        msg["From"] = self._config.username
-        msg["To"] = receiver
-        msg["Subject"] = subject
-        msg["Date"] = formatdate(localtime=True)
+        if messages_type == MessageType.PortalRegistration:
+            username = rabbit_message["username"]
+            mail = rabbit_message["mail"]
+            body = REGISTRATION_TEMPLATE.format(username=username)
+            msg = self._build_email(
+                subject=MessageSubject.Registration,
+                body=body,
+                receiver=mail,
+            )
 
-        content = MIMEMultipart("alternative")
+            messages.append(msg)
 
-        text_part = MIMEText("Email requires HTML support", "plain", "utf-8")
-        content.attach(text_part)
+        elif messages_type == MessageType.NewEventInfo:
+            receivers = rabbit_message["receivers"]
 
-        html_part = MIMEText(body, "html", "utf-8")
-        content.attach(html_part)
+            event = rabbit_message["event"]
+            event_title = event["event_title"]
+            event_link = event["event_link"]
 
-        msg.attach(content)
-        return msg
+            for receiver in receivers:
+                username = receiver["username"]
+                mail = receiver["mail"]
+                body = EVENT_TEMPLATE.format(username=username, event_title=event_title, event_link=event_link)
+                msg = self._build_email(
+                    subject=MessageSubject.NewEvent,
+                    body=body,
+                    receiver=mail,
+                )
 
-    def _send_via_smtp(self, msg: MIMEMultipart, recipient: str) -> bool:
+                messages.append(msg)
+
+        else:
+            self._logger.error(f"Unknown messages type: {messages_type}")
+            return False
+
+        return self._send_via_smtp(messages_to_send=messages)
+
+    def _send_via_smtp(self, messages_to_send: List[MIMEText]) -> bool:
+        def _send_message(final_server: smtplib.SMTP_SSL | smtplib.SMTP, messages: List[MIMEText]) -> None:
+            for msg in messages:
+                final_server.send_message(msg)
+
         try:
             context = ssl.create_default_context()
 
@@ -69,16 +68,17 @@ class EmailSender:
                 with smtplib.SMTP_SSL(
                     host=self._config.host, port=self._config.port, context=context, timeout=self._config.timeout
                 ) as server:
-                    server.login(user=self._config.username, password=self._config.password)
-                    server.sendmail(from_addr=self._config.username, to_addrs=recipient, msg=msg.as_string())
+                    server.login(user=self._config.username, password=self._config.password.get_secret_value())
+                    _send_message(server, messages_to_send)
+
             else:
                 with smtplib.SMTP(
                     host=self._config.host, port=self._config.port, timeout=self._config.timeout
                 ) as server:
                     if self._config.use_tls:
                         server.starttls(context=context)
-                    server.login(user=self._config.username, password=self._config.password)
-                    server.sendmail(from_addr=self._config.username, to_addrs=recipient, msg=msg.as_string())
+                    server.login(user=self._config.username, password=self._config.password.get_secret_value())
+                    _send_message(server, messages_to_send)
 
             return True
 
@@ -92,25 +92,12 @@ class EmailSender:
             self._logger.error(f"Неизвестная ошибка: {e}")
             return False
 
+    def _build_email(self, subject: MessageSubject, body: str, receiver: str) -> MIMEText:
+        msg = MIMEText(body, "plain", "utf-8")
 
-if __name__ == "__main__":
-    sender = EmailSender(
-        EmailConfig(
-            host="smtp.gmail.com",
-            port=587,
-            username="educational.events.itmo@gmail.com",
-            password="gwlmhhuciujzpbwv",
-            use_tls=True,
-            timeout=15,
-        )
-    )
+        msg["From"] = self._config.username
+        msg["To"] = receiver
+        msg["Subject"] = subject
+        msg["Date"] = formatdate(localtime=True)
 
-    success = sender.send_email(
-        subject="Важное тестовое письмо",
-        body=FIRST_MAIL,
-        receiver="artem2004920@gmail.com",
-    )
-
-    # uletayu_na_gaiti
-
-# pashagerasimik@mail.ru
+        return msg

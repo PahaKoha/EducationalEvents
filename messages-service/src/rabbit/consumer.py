@@ -5,20 +5,23 @@ import time
 import pika
 from pika.exceptions import AMQPChannelError, AMQPConnectionError
 
+from sender.sender import EmailSender
+
 logger = logging.getLogger(__name__)
 
 
 class RabbitConsumer:
-    def __init__(self, rabbit_url: str, message_queue: str, reconnect_delay: int) -> None:
-        self.rabbit_url = rabbit_url
-        self.message_queue = message_queue
-        self.reconnect_delay = reconnect_delay
+    def __init__(self, rabbit_url: str, message_queue: str, sender: EmailSender, reconnect_delay: int = 2) -> None:
+        self._rabbit_url = rabbit_url
+        self._message_queue = message_queue
+        self._reconnect_delay = reconnect_delay
+        self._sender = sender
 
-    def connect(self) -> None:
+    def _connect(self) -> None:
         try:
-            self.connection = pika.BlockingConnection(pika.URLParameters(self.rabbit_url))
+            self.connection = pika.BlockingConnection(pika.URLParameters(self._rabbit_url))
             self.channel = self.connection.channel()
-            self.channel.queue_declare(queue=self.message_queue, durable=True)
+            self.channel.queue_declare(queue=self._message_queue, durable=True)
 
         except AMQPConnectionError as e:
             logger.error(f"Connection failed: {e}")
@@ -28,7 +31,7 @@ class RabbitConsumer:
             raise
 
     def run(self) -> None:
-        self.connect()
+        self._connect()
         self._start_consuming()
 
         while True:
@@ -55,7 +58,7 @@ class RabbitConsumer:
         if self.channel:
             logger.info("Starting consumer...")
             self._consumer_tag = self.channel.basic_consume(
-                queue=self.message_queue, on_message_callback=self._on_message, auto_ack=False
+                queue=self._message_queue, on_message_callback=self._on_message, auto_ack=False
             )
             self.channel.start_consuming()
 
@@ -63,9 +66,9 @@ class RabbitConsumer:
         self.should_reconnect = True
         self._close_connection()
 
-        logger.warning(f"Reconnecting in {self.reconnect_delay} seconds...")
-        time.sleep(self.reconnect_delay)
-        self.connect()
+        logger.warning(f"Reconnecting in {self._reconnect_delay} seconds...")
+        time.sleep(self._reconnect_delay)
+        self._connect()
         self._start_consuming()
 
     def _on_message(self, channel, method, properties, body):
@@ -87,4 +90,10 @@ class RabbitConsumer:
             logger.error(f"Processing failed: {e}", exc_info=True)
             channel.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
 
-    def _process_message(self, message): ...
+    def _process_message(self, message) -> bool:
+        if not self._sender.send_email(message):
+            logger.warning(f"Message failed to send: {message}")
+            return False
+
+        logger.info(f"Message processed: {message}")
+        return True
