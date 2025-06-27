@@ -1,0 +1,52 @@
+version: "3.9"
+
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: events-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: events
+      TZ: UTC
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks: [events-net]
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: events-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      TZ: UTC
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    networks: [events-net]
+
+  events:
+    build: .
+    container_name: events-app
+    depends_on:
+      - postgres
+      - rabbitmq
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/events
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      JWT_SECRET: 134tfgfdg5656dgfdgd4545fsdkgffdkgdfgkdfkmbdfk342i4i24i2gdfngdngndkgdke
+    ports:
+      - "8080:8080"
+    networks: [events-net]
+
+networks:
+  events-net:
+
+volumes:
+  pgdata:
