@@ -20,10 +20,11 @@ import java.util.UUID;
 @Getter
 @Setter
 @Table(name = "event")
-public class EventEntity {
+public class EventEntity  {
+
     @Id
     @Column(name = "id")
-    private UUID id;
+    protected UUID id;
 
     @Column(name = "name")
     private String name;
@@ -34,11 +35,11 @@ public class EventEntity {
     @Column(name = "is_internal")
     private Boolean isInternal;
 
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
+    @ManyToOne
     @JoinColumn(name = "event_type_id", referencedColumnName = "id")
     private EventTypeEntity eventType;
 
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
+    @ManyToOne
     @JoinColumn(name = "sphere_id", referencedColumnName = "id")
     private SphereEntity sphere;
 

@@ -4,6 +4,7 @@ import com.educational.events.model.AuthOperationResult;
 import com.educational.events.model.BaseOperationResult;
 import com.educational.events.transfer.JwtRequestTo;
 import com.educational.events.transfer.NewUserDataTo;
+import com.educational.events.transfer.UpdateUserData;
 import com.educational.events.usecase.user.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -32,5 +33,10 @@ public class UserController {
     @PutMapping("/registration")
     public BaseOperationResult createNewUser(@RequestBody NewUserDataTo newUserDataTo) {
         return authService.createNewUser(newUserDataTo);
+    }
+
+    @PutMapping("/update")
+    public BaseOperationResult updateUser(@RequestBody UpdateUserData newUserDataTo) {
+        return authService.updateUser(newUserDataTo);
     }
 }

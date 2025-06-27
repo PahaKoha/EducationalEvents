@@ -20,4 +20,11 @@
 
     <!--  Создание функций  -->
     <include file="sql/function/create_search_generic_function.sql" relativeToChangelogFile="true"/>
+
+    <!--  Обновление таблиц  -->
+    <include file="sql/main/role/alter_table_role_v_0_1.sql" relativeToChangelogFile="true"/>
+    <include file="sql/main/sphere/alter_table_sphere_v_0_1.sql" relativeToChangelogFile="true"/>
+    <include file="sql/main/event_type/alter_table_event_type_v_0_1.sql" relativeToChangelogFile="true"/>
+    <include file="sql/main/user/alter_table_user_v_0_1.sql" relativeToChangelogFile="true"/>
+
 </databaseChangeLog>

@@ -16,11 +16,12 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
-@Table(name = "user")
+@Table(name = "itmo_user")
 public class ITMOUser {
+
     @Id
     @Column(name = "id")
-    private UUID id;
+    protected UUID id;
 
     @Column(name = "username")
     private String username;

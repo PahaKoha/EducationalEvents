@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -23,13 +24,17 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @EnableWebSecurity
 @Configuration
-@RequiredArgsConstructor
 //@EnableGlobalMethodSecurity(securedEnabled = true)
 public class SecurityConfiguration {
 
 
     private final UserService userService;
     private final JwtRequestFilter jwtRequestFilter;
+
+    public SecurityConfiguration(@Lazy UserService userService, JwtRequestFilter jwtRequestFilter) {
+        this.userService = userService;
+        this.jwtRequestFilter = jwtRequestFilter;
+    }
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {

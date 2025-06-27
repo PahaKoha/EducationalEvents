@@ -1,6 +1,16 @@
 spring:
   application:
     name: events
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+    listener:
+      simple:
+        prefetch: 10
+        concurrency: 5
   jpa:
     properties:
       hibernate:
@@ -23,3 +33,7 @@ spring:
     driver-class-name: org.postgresql.Driver
   liquibase:
     change-log: classpath:/db/migration/changelog.xml
+
+jwt:
+  secret: 134tfgfdg5656dgfdgd4545fsdkgffdkgdfgkdfkmbdfk342i4i24i2gdfngdngndkgdke
+  lifetime: 24h

@@ -1,10 +1,12 @@
 package com.educational.events.usecase.user;
 
+import com.educational.events.model.BaseOperationResult;
 import com.educational.events.model.ITMOUser;
 import com.educational.events.repository.UserRepository;
 import com.educational.events.transfer.NewUserDataTo;
 import com.educational.events.usecase.role.RoleFetchUseCase;
 import jakarta.transaction.Transactional;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -28,9 +30,20 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
 
-    private final UserRepository userRepository;
+    @Getter
     private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
     private final RoleFetchUseCase roleFetchUseCase;
+
+    /**
+     * Ищет пользователя по его id.
+     *
+     * @param id - id
+     * @return объект Optional с пользователем, если он найден.
+     */
+    public Optional<ITMOUser> findById(UUID id) {
+        return userRepository.findById(id);
+    }
 
 
     /**
@@ -80,5 +93,9 @@ public class UserService implements UserDetailsService {
         user.setPassword(passwordEncoder.encode(newDAta.getPassword()));
         user.setRoles(List.of(roleFetchUseCase.getUserRole()));
         return userRepository.save(user);
+    }
+
+    public ITMOUser updateUser(ITMOUser updated) {
+        return userRepository.save(updated);
     }
 }

@@ -1,4 +1,4 @@
-package utils;
+package com.educational.events.utils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
