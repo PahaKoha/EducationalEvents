@@ -17,7 +17,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Table(name = "user")
-public class User {
+public class ITMOUser {
     @Id
     @Column(name = "id")
     private UUID id;
