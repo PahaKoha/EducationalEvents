@@ -35,8 +35,8 @@ class EmailSender:
             receivers = rabbit_message["receivers"]
 
             event = rabbit_message["event"]
-            event_title = event["event_title"]
-            event_link = event["event_link"]
+            event_title = event["title"]
+            event_link = event["link"]
 
             for receiver in receivers:
                 username = receiver["username"]
