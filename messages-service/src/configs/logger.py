@@ -1,6 +1,7 @@
 from logging.config import dictConfig
 
 LOGGING = {
+    "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
         "verbose": {
@@ -9,16 +10,15 @@ LOGGING = {
     },
     "handlers": {
         "console": {
-            "level": "DEBUG",
+            "level": "INFO",
             "class": "logging.StreamHandler",
-            "formatter": "simple",
+            "formatter": "verbose",
         },
     },
     "loggers": {
-        "celery": {
+        "root": {
             "handlers": ["console"],
-            "level": "DEBUG",
-            "propagate": True,
+            "level": "INFO",
         },
     },
 }

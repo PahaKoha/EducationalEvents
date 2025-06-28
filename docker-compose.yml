@@ -1,7 +1,9 @@
-version: "3.9"
+x-rabbit_envs: &rabbit_envs
+  RABBITMQ_URL: "amqp://guest:guest@events-rabbitmq:5672/"
+  RABBITMQ_MESSAGE_QUEUE: "Eblan_fm"
+
 
 services:
-
   postgres:
     image: postgres:16-alpine
     container_name: events-postgres
@@ -13,6 +15,11 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: events
       TZ: UTC
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks: [events-net]
@@ -25,24 +32,44 @@ services:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
       TZ: UTC
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 5s
+      timeout: 10s
+      retries: 5
     ports:
       - "15672:15672"
       - "5672:5672"
     networks: [events-net]
 
   events:
-    build: .
+    build: ./backend
     container_name: events-app
-    depends_on:
-      - postgres
-      - rabbitmq
+    depends_on: &condition
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/events
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_JPA_HIBERNATE_DDL_AUTO: validate
       JWT_SECRET: 134tfgfdg5656dgfdgd4545fsdkgffdkgdfgkdfkmbdfk342i4i24i2gdfngdngndkgdke
+      <<: *rabbit_envs
     ports:
       - "8080:8080"
+    networks: [events-net]
+
+  messages_sender:
+    build: ./messages-service
+    depends_on:
+      <<: *condition
+    environment:
+      <<: *rabbit_envs
+      SMTP_PORT: "587"
+      SMTP_HOST: "smtp.gmail.com"
+      MAIL_BOX: "educational.events.itmo@gmail.com"
+      MAIL_PASSWORD: "gwlmhhuciujzpbwv"
     networks: [events-net]
 
 networks:

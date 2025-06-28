@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     SMTP_HOST: str
     MAIL_BOX: str
     MAIL_PASSWORD: str
+    USE_TLS: bool = True
+    TIMEOUT: int = 15
 
 
 settings = Settings()
