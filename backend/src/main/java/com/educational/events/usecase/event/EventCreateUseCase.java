@@ -4,10 +4,14 @@ import com.educational.events.config.RabbitConfig;
 import com.educational.events.mapper.EventMapper;
 import com.educational.events.model.BaseOperationResult;
 import com.educational.events.model.ITMOUser;
+import com.educational.events.model.MailCreateEventTo;
+import com.educational.events.model.enums.MessageType;
 import com.educational.events.model.enums.OperationStatus;
 import com.educational.events.repository.EventEntityRepository;
 import com.educational.events.repository.UserRepository;
 import com.educational.events.transfer.EventTo;
+import com.educational.events.transfer.MailEventLiteInformation;
+import com.educational.events.transfer.MailUserLiteInformation;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -44,21 +48,28 @@ public class EventCreateUseCase {
         var created = eventEntityRepository.save(eventEntity);
 
         var userForSendEmail = userRepository.findBySpheresInAndEventTypesIn(List.of(created.getSphere()),
-            List.of(created.getEventType()));
+                List.of(created.getEventType()));
 
-        var jsonIds = userForSendEmail.stream().map(ITMOUser::getEmail).toList();
+        var userLiteInfoList = userForSendEmail.stream()
+                .map(user -> new MailUserLiteInformation(user.getUsername(), user.getEmail()))
+                .toList();
+
+        var mailCreateEvent = new MailCreateEventTo(
+                MessageType.NEW_EVENT,
+                new MailEventLiteInformation(newEvent.getName(), newEvent.getInfoLink()),
+                userLiteInfoList);
 
         try {
-            rabbitTemplate.convertAndSend(RabbitConfig.QUEUE, objectMapper.writeValueAsString(jsonIds));
+            rabbitTemplate.convertAndSend(RabbitConfig.QUEUE, objectMapper.writeValueAsString(mailCreateEvent));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
 
         return BaseOperationResult
-            .builder()
-            .withStatus(OperationStatus.OK)
-            .withEntityId(created.getId())
-            .withMessage("Success event creation!")
-            .build();
+                .builder()
+                .withStatus(OperationStatus.OK)
+                .withEntityId(created.getId())
+                .withMessage("Success event creation!")
+                .build();
     }
 }
