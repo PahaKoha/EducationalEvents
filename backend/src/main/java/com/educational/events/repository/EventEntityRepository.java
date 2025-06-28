@@ -27,7 +27,7 @@ public interface EventEntityRepository extends JpaRepository<EventEntity, UUID> 
      */
     @Query(nativeQuery = true, value = "SELECT * FROM search_entities('" + SEARCH_FUNCTION + "', :params, TRUE, "
         + "CAST(NULL AS event));")
-    List<EventEntity> searchEntities(String token, String params);
+    List<EventEntity> searchEntities(String params);
 
     /**
      * Поиск по параметрам.

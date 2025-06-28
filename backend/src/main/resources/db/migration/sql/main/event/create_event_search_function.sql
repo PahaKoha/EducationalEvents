@@ -24,8 +24,6 @@ BEGIN
             e.name,
             e.description,
             e.is_internal,
-            et.name             AS event_type,
-            s.name              AS sphere,
             e.start_at,
             e.end_at,
             e.max_participants,
