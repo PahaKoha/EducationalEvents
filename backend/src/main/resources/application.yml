@@ -36,4 +36,5 @@ spring:
 
 jwt:
   secret: 134tfgfdg5656dgfdgd4545fsdkgffdkgdfgkdfkmbdfk342i4i24i2gdfngdngndkgdke
-  lifetime: 24h
+  access-lifetime: PT10M
+  refresh-lifetime: P14D

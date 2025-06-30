@@ -5,6 +5,7 @@ import com.educational.events.model.BaseOperationResult;
 import com.educational.events.model.BusinessFetchQueryParams;
 import com.educational.events.model.EventFilter;
 import com.educational.events.repository.EventEntityRepository;
+import com.educational.events.transfer.EventProjection;
 import com.educational.events.transfer.EventTo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,16 +24,11 @@ public class EventFetchUseCase {
     private final ObjectMapper objectMapper;
     private final EventMapper eventMapper;
 
-    public List<EventTo> exec(BusinessFetchQueryParams<EventFilter> params) {
+    public List<EventProjection> exec(BusinessFetchQueryParams<EventFilter> params) {
         try {
             var jsonParams = objectMapper.writeValueAsString(params);
-            var eventEntities = eventEntityRepository.searchEntities(jsonParams);
 
-            return eventEntities
-                .stream()
-                .filter(Objects::nonNull)
-                .map(eventMapper::convert)
-                .toList();
+            return eventEntityRepository.searchEntities(jsonParams);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

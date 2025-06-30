@@ -6,19 +6,26 @@ import com.educational.events.model.enums.MessageType;
 import com.educational.events.model.enums.OperationStatus;
 import com.educational.events.transfer.JwtRequestTo;
 import com.educational.events.transfer.NewUserDataTo;
+import com.educational.events.transfer.TokenPair;
 import com.educational.events.transfer.UpdateUserData;
 import com.educational.events.utils.JwtTokenUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.lang.Collections;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.stream.Collectors;
 
 /**
@@ -30,37 +37,9 @@ public class AuthService {
 
     private final UserService userService;
     private final JwtTokenUtils jwtTokenUtils;
-    private final AuthenticationManager authenticationManager;
     private final RabbitTemplate rabbitTemplate;
     private final ObjectMapper objectMapper;
 
-
-    /**
-     * Метод для создания токена аутентификации
-     *
-     * @param jwtRequestTo запрос с данными для аутентификации (имя пользователя и пароль)
-     * @return ответ с токеном или ошибкой аутентификации
-     */
-    public AuthOperationResult createAuthToken(JwtRequestTo jwtRequestTo) {
-        try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(jwtRequestTo.getUsername(),
-                    jwtRequestTo.getPassword()));
-        } catch (BadCredentialsException e) {
-            return AuthOperationResult
-                    .builder()
-                    .withStatus(OperationStatus.FAILED)
-                    .withMessage("Token obtain failed! Username or password is incorrect!")
-                    .build();
-        }
-        UserDetails userDetails = userService.loadUserByUsername(jwtRequestTo.getUsername());
-        String token = jwtTokenUtils.generateToken(userDetails);
-        return AuthOperationResult
-                .builder()
-                .withStatus(OperationStatus.OK)
-                .withToken(token)
-                .withMessage("Token obtain success!")
-                .build();
-    }
 
     /**
      * Метод для создания нового пользователя
@@ -164,5 +143,55 @@ public class AuthService {
                 .withEntityId(createdUser.getId())
                 .withMessage("User creation success")
                 .build();
+    }
+
+    public ResponseEntity<TokenPair> login(JwtRequestTo jwtRequestTo,
+                                           HttpServletResponse httpServletResponse,
+                                           AuthenticationManager authenticationManager) {
+
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(jwtRequestTo.getUsername(),
+                jwtRequestTo.getPassword()));
+
+        UserDetails ud  = userService.loadUserByUsername(jwtRequestTo.getUsername());
+        String access   = jwtTokenUtils.generateAccess(ud);
+        String refresh  = jwtTokenUtils.generateRefresh(ud);
+
+        addRefreshCookie(httpServletResponse, refresh);
+        return ResponseEntity.ok(new TokenPair(access, ud.getUsername()));
+    }
+
+    public ResponseEntity<TokenPair> refresh(String refreshCookie,
+                                             HttpServletResponse httpServletResponse) {
+
+        if (!jwtTokenUtils.isRefresh(refreshCookie))
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        String username = jwtTokenUtils.getUsername(refreshCookie);
+        UserDetails ud  = userService.loadUserByUsername(username);
+
+        String accessNew  = jwtTokenUtils.generateAccess(ud);
+        String refreshNew = jwtTokenUtils.generateRefresh(ud);
+
+        addRefreshCookie(httpServletResponse, refreshNew);
+        return ResponseEntity.ok(new TokenPair(accessNew, username));
+    }
+
+    public void logout(HttpServletResponse resp) {
+        ResponseCookie empty = ResponseCookie.from("refresh", "")
+                .httpOnly(true).secure(true).sameSite("Strict")
+                .path("/user/refresh").maxAge(0).build();
+        resp.addHeader(HttpHeaders.SET_COOKIE, empty.toString());
+    }
+
+    private void addRefreshCookie(HttpServletResponse resp, String value) {
+        ResponseCookie cookie = ResponseCookie.from("refresh", value)
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("Strict")
+                .path("/user/refresh")
+                .maxAge(Duration.ofDays(14))
+                .build();
+
+        resp.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 }

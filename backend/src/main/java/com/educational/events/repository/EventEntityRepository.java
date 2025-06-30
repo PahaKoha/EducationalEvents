@@ -1,6 +1,7 @@
 package com.educational.events.repository;
 
 import com.educational.events.model.EventEntity;
+import com.educational.events.transfer.EventProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -26,8 +27,8 @@ public interface EventEntityRepository extends JpaRepository<EventEntity, UUID> 
      * @return список сущностей по фильтру.
      */
     @Query(nativeQuery = true, value = "SELECT * FROM search_entities('" + SEARCH_FUNCTION + "', :params, TRUE, "
-        + "CAST(NULL AS event));")
-    List<EventEntity> searchEntities(String params);
+        + "CAST(NULL AS event_projection));")
+    List<EventProjection> searchEntities(String params);
 
     /**
      * Поиск по параметрам.

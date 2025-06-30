@@ -3,6 +3,7 @@ package com.educational.events.controller;
 import com.educational.events.model.BaseOperationResult;
 import com.educational.events.model.BusinessFetchQueryParams;
 import com.educational.events.model.EventFilter;
+import com.educational.events.transfer.EventProjection;
 import com.educational.events.transfer.EventTo;
 import com.educational.events.usecase.event.EventCreateUseCase;
 import com.educational.events.usecase.event.EventFetchUseCase;
@@ -47,8 +48,8 @@ public class EventController {
         return updateUseCase.exec(event);
     }
 
-    @GetMapping("/search")
-    public List<EventTo> search(@RequestBody BusinessFetchQueryParams<EventFilter> params) {
+    @PostMapping("/search")
+    public List<EventProjection> search(@RequestBody BusinessFetchQueryParams<EventFilter> params) {
         return eventFetchUseCase.exec(params);
     }
 
