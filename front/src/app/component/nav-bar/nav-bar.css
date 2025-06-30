@@ -1,0 +1,58 @@
+.navbar {
+  background-color: #333333;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.navbar-brand-and-links {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-brand-and-links ul {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+
+.navbar .brand {
+  padding: 0 24px;
+  color: #e7e7e7;
+  font-size: 24px;
+}
+
+.navbar ul li a {
+  color: #e7e7e7;
+  padding: 24px;
+  display: block;
+  text-decoration: none;
+}
+
+.navbar ul a:hover {
+  background-color: #272727;
+}
+
+.navbar-login {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-login button {
+  padding: 24px;
+  display: block;
+  border: medium none;
+  text-decoration: none;
+  background-image: none;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  text-decoration:none;
+  color: #e7e7e7;
+}
+
+.navbar-login button:hover {
+  background-color: #272727;
+}

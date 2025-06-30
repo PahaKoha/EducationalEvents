@@ -1,0 +1,17 @@
+<nav class="navbar">
+  <div class="navbar-brand-and-links">
+    <a class="brand" routerLink="">ITMO Education</a>
+    <ul>
+      <li><a routerLink="admin">For admins</a></li>
+      <li><a routerLink="">Events</a></li>
+    </ul>
+  </div>
+  <div class="navbar-login">
+    @if (!username) {
+      <button (click)="changeLogInWindowState()">LogIn</button>
+    } @else {
+      <button>Welcome, {{ username }}</button>
+      <button (click)="logout()">Logout</button>
+    }
+  </div>
+</nav>

@@ -1,0 +1,22 @@
+<form [formGroup]="loginFormGroup">
+  <div class="main-container">
+    <div class="auth-window">
+      <h1>Войти в аккаунт</h1>
+
+      <input formControlName="username" type="text" placeholder="Имя пользователя">
+      <input formControlName="password" type="password" placeholder="Пароль">
+
+      <div class="button-group">
+        <!-- всё как раньше -->
+        <button (click)="authUser()">Войти</button>
+        <button (click)="changeLogInWindowState()">Закрыть</button>
+      </div>
+
+      <div class="link">
+        <a (click)="changeLogInWindowState(); changeRegistrationWindowState()">
+          У вас еще нет аккаунта? Зарегистрируйтесь!
+        </a>
+      </div>
+    </div>
+  </div>
+</form>

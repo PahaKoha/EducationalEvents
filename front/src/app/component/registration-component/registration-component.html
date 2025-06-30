@@ -1,0 +1,21 @@
+<form [formGroup]="registrationFormGroup">
+  <div class="main-container">
+    <div class="reg-window">
+      <h1>Создать аккаунт</h1>
+      <input formControlName="username" type="text" placeholder="Имя пользователя">
+      <input formControlName="email" type="text" placeholder="Электронная почта">
+      <input formControlName="password" type="password" placeholder="Пароль">
+      <input formControlName="confirmedPassword" type="password" placeholder="Подтвердите пароль">
+
+      <div class="button-group">
+        <button (click)="registrationUser(); test()">Зарегистрироваться</button>
+        <button (click)="changeRegistrationWindowState()">Закрыть</button>
+      </div>
+      <div class="link">
+        <a (click)="changeLogInWindowState(); changeRegistrationWindowState()">
+          У вас уже есть аккаунт? Войдите в учтную запись!
+        </a>
+      </div>
+    </div>
+  </div>
+</form>
